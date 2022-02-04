@@ -1,0 +1,52 @@
+version: "3.1"
+
+services:
+  nginx:
+    image: banian/nginx-extras
+    ports:
+      - ${NGINX_PORT}:80
+    volumes:
+      - ./:/app
+      - ./docker/nginx/sites-enabled:/etc/nginx/sites-enabled
+    depends_on:
+      - app
+    networks:
+      - net
+
+  app:
+    build: docker/php
+    ports:
+      - ${PHP_FPM_PORT}:9000
+    volumes:
+      - ./:/app
+      - ../../var/composer:/root/.composer
+    depends_on:
+      - clickhouse
+    secrets:
+      - host_ssh_key
+    environment:
+      PHP_IDE_CONFIG: ${PHP_IDE_CONFIG}
+    networks:
+      - net
+
+  clickhouse:
+    image: yandex/clickhouse-server
+    ports:
+      - ${CLICK_DB_PORT}:8123
+      - ${CLICK_TCP_PORT}:9000
+    networks:
+      - net
+    volumes:
+      - ./var/clickhouse_db:/var/lib/clickhouse
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.240.0/28
+
+secrets:
+  host_ssh_key:
+    file: ~/.ssh/${SSH_KEY}
