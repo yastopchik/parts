@@ -45,7 +45,7 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 192.168.240.0/28
+        - subnet: 192.168.250.0/28
 
 secrets:
   host_ssh_key:
